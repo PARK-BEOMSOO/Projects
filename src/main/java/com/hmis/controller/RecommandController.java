@@ -22,7 +22,7 @@ public class RecommandController {
 	private static final Logger logger = LoggerFactory.getLogger(RecommandController.class);
 
 	@Inject
-	PostingService service;
+	PostingService service; 
 
 	// JSON 파싱할 수 있는 기본 형태 제공
 	// "와 {} 제거
