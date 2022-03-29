@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.LicenseMapper">
+
+	<!--학생 취득 자격증(승인완료) 전체 리스트 -->
+	<select id="selectAllLicenses" resultType="com.hmis.domain.LicenseVO">
+		SELECT l.USER_NO
+			, l.SUB_NO
+			, l.SERIAL_NUM
+			, l.AC_DATE
+			, l.SCORE
+			, s.SUB_NAME
+			, s.AREA
+			, s.PUBLICATION
+		FROM TBL_LICENSE l, TBL_SUBJECT s
+		WHERE s.AREA IN ('정보화 영역','금융,회계영역','교육영역') AND l.SUB_NO = s.SUB_NO AND l.USER_NO = #{userNo}
+		ORDER BY l.SUB_NO DESC
+	</select>
+
+	<!--등록을 위한 (pupup) 자격증 영역 목록 -->
+	<select id="selectAllSubject" resultType="com.hmis.domain.LicenseVO">
+		SELECT SUB_NO
+			, SUB_NAME
+			, AREA
+			, PUBLICATION
+		FROM TBL_SUBJECT
+		WHERE AREA IN ('정보화 영역','금융,회계영역','교육영역')
+			  AND SUB_NO NOT IN (SELECT SUB_NO FROM TBL_LICENSE WHERE USER_NO = #{userNo})
+		ORDER BY SUB_NO
+	</select>
+
+	<insert id="insertLicense">
+		INSERT INTO TBL_LICENSE
+		(SERIAL_NUM, AC_DATE, SCORE, SUB_NO, USER_NO, APPLY_NO)
+		VALUES (#{serialNum}, #{acDate}, #{acScore}, #{subNo}, #{userNo}, #{applyNo})
+	</insert>
+	
+   <delete id="deleteLicense">
+      DELETE FROM TBL_LICENSE
+      WHERE APPLY_NO = #{applyNo} AND USER_NO = #{userNo}
+   </delete>	
+
+	<select id="selectAllLanguages" resultType="com.hmis.domain.LicenseVO">
+		SELECT l.USER_NO
+			, l.SUB_NO
+			, l.SERIAL_NUM
+			, l.AC_DATE
+			, l.SCORE
+			, s.SUB_NAME
+			, s.AREA
+			, s.PUBLICATION
+		FROM TBL_LICENSE l, TBL_SUBJECT s
+		WHERE s.AREA IN ('외국어') AND l.SUB_NO = s.SUB_NO AND l.USER_NO = #{userNo}
+		ORDER BY l.SUB_NO DESC
+	</select>
+	
+	<!--등록을 위한 (pupup) 외국어 영역 목록 -->
+	<select id="selectLanguageList" resultType="com.hmis.domain.LicenseVO">
+		SELECT SUB_NO
+			, SUB_NAME
+			, AREA
+			, PUBLICATION
+		FROM TBL_SUBJECT
+		WHERE AREA IN ('외국어')
+			  AND SUB_NO NOT IN (SELECT SUB_NO FROM TBL_LICENSE WHERE USER_NO = #{userNo})
+		ORDER BY SUB_NO;
+	</select>
+	
+</mapper>

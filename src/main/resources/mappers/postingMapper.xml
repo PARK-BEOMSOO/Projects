@@ -1,0 +1,297 @@
+<<<<<<< HEAD
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.PostingMapper">
+
+	<!-- 1) 관리자 : 채용공고 등록 -->
+	<insert id="insert">
+		INSERT INTO TBL_POSTING
+			(POSTING_ID, COMPANY_NAME, JOB_NAME, COMPANY_SIZE, COMPANY_OVERVIEW, JOB_DESC, JOB_REQUIREMENT, CONTENT, SALARY, LINK_ADDRESS)
+		VALUES
+			(SEQ_POSTING.nextval, #{companyName}, #{jobName}, #{companySize}, #{companyOverview}, #{jobDesc}, #{jobRequirement}, #{content}, #{salary}, #{linkAddress})
+	</insert>
+
+	<!-- 2) 관리자 : 채용공고 상세보기 -->
+	<select id="read" resultType="com.hmis.domain.PostingVO">
+		SELECT
+			POSTING_ID
+			, COMPANY_NAME
+			, JOB_NAME
+			, COMPANY_SIZE
+			, COMPANY_OVERVIEW
+			, JOB_DESC
+			, JOB_REQUIREMENT
+			, CONTENT
+			, SALARY
+			, LINK_ADDRESS
+		FROM
+			TBL_POSTING
+		WHERE 
+			POSTING_ID = #{postingId}
+	</select>
+
+	<!-- 3) 관리자 : 채용공고 수정 -->
+   <update id="update">
+      UPDATE 
+      	TBL_POSTING 
+      SET 
+      	COMPANY_NAME = #{companyName}
+      	, JOB_NAME = #{jobName}
+      	, COMPANY_SIZE = #{companySize}
+      	, COMPANY_OVERVIEW = #{companyOverview}
+      	, JOB_DESC = #{jobDesc}
+      	, JOB_REQUIREMENT = #{jobRequirement}
+      	, CONTENT = #{content}
+      	, SALARY = #{salary}
+      	, LINK_ADDRESS = #{linkAddress}
+      WHERE 
+      	POSTING_ID = #{postingId}
+   </update>
+
+	<!-- 4) 관리자 : 채용공고 삭제 -->
+   <delete id="delete">
+      DELETE FROM 
+      	TBL_POSTING
+      WHERE 
+      	POSTING_ID = #{postingId}
+   </delete>
+   
+   	<!-- 검색 조건 -->
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'all'.toString()"> 
+				AND (COMPANY_NAME like '%' || #{keyword} || '%' 
+					OR JOB_NAME like '%' || #{keyword} || '%' 
+					OR COMPANY_SIZE like '%' || #{keyword} || '%') 
+			</if>
+			<if test="searchType == 'cn'.toString()"> AND COMPANY_NAME like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'jn'.toString()"> AND JOB_NAME like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'cs'.toString()"> AND COMPANY_SIZE like '%' || #{keyword} || '%' </if>
+		</if>
+	</sql>
+
+	<!-- 5) 관리자 : 채용공고 목록 페이징 처리(검색) -->
+	<select id="listSearchCriteria" resultType="com.hmis.domain.PostingVO">
+		<![CDATA[
+		SELECT * FROM (
+			SELECT ROWNUM RNUM
+				, POSTING_ID
+				, COMPANY_NAME
+				, JOB_NAME
+				, COMPANY_SIZE
+			FROM
+				(SELECT * FROM TBL_POSTING WHERE POSTING_ID > 0 
+		]]>
+			<include refid="search"></include>
+		<![CDATA[    
+			ORDER BY POSTING_ID DESC))
+		WHERE (RNUM >= #{pageStart} AND RNUM <= #{pageEnd})
+		ORDER BY POSTING_ID DESC
+		]]>
+	</select>
+
+	<!-- 6) 관리자 : 페이징 처리를 위한 채용공고 수 가져오기(검색) -->
+	<select id="listCountSearchCriteria" resultType="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM TBL_POSTING WHERE POSTING_ID > 0 
+		]]>
+		<include refid="search"></include>
+	</select>
+	
+	<!-- 7) 관리자 : 인재추천 -->
+	<select id="recommand" resultType="com.hmis.dto.RecommandDTO">
+       <![CDATA[
+        SELECT 
+			UC.USER_NO, U.USER_NAME, C.CAR_NAME, ROUND(DBMS_RANDOM.VALUE(85,97),2) RECOMMAND, PF.PHONE 
+		FROM 
+			TBL_USER U, TBL_CARRIER C,  TBL_USCAR UC, TBL_PORTFOLIO PF, TBL_POSTING PT
+		WHERE 
+			U.USER_NO = UC.USER_NO 
+            AND PF.USER_NO = U.USER_NO
+			AND C.CAR_NO = UC.CAR_NO
+            AND PT.POSTING_ID = #{postingId}
+			AND PT.JOB_NAME LIKE '%' || C.CAR_NAME || '%'
+            AND ROWNUM <= 5
+		ORDER BY RECOMMAND DESC
+		]]>
+	</select>
+
+	<!-- 채용직무 기업명 기업형태 연봉 추천점수 -->
+   <select id="recommandPosting" resultType="com.hmis.dto.RecommandDTO">
+		<![CDATA[
+	     SELECT 
+	         PT.POSTING_ID, PT.JOB_NAME, PT.COMPANY_NAME, PT.COMPANY_SIZE, PT.SALARY, ROUND(DBMS_RANDOM.VALUE(85,97),2) RECOMMAND
+	      FROM 
+	         TBL_USER U, TBL_CARRIER C,  TBL_USCAR UC, TBL_PORTFOLIO PF, TBL_POSTING PT
+	      WHERE 
+	         U.USER_NO = UC.USER_NO 
+	            AND PF.USER_NO = U.USER_NO
+	         	AND C.CAR_NO = UC.CAR_NO
+	         	AND PT.JOB_NAME LIKE '%' || C.CAR_NAME || '%'
+                AND U.USER_NO = #{userNo}
+	            AND ROWNUM <= 5
+	      ORDER BY RECOMMAND DESC
+		]]>
+   </select>
+
+</mapper>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.PostingMapper">
+
+	<!-- 1) 관리자 : 채용공고 등록 -->
+	<insert id="insert">
+		INSERT INTO TBL_POSTING
+		(POSTING_ID, COMPANY_NAME, JOB_NAME, COMPANY_SIZE, COMPANY_OVERVIEW, JOB_DESC,
+		JOB_REQUIREMENT, CONTENT, SALARY, LINK_ADDRESS)
+		VALUES
+		(SEQ_POSTING.nextval, #{companyName}, #{jobName}, #{companySize},
+		#{companyOverview}, #{jobDesc}, #{jobRequirement}, #{content},
+		#{salary}, #{linkAddress})
+	</insert>
+
+	<!-- 2) 관리자 : 채용공고 상세보기 -->
+	<select id="read" resultType="com.hmis.domain.PostingVO">
+		SELECT
+		POSTING_ID
+		, COMPANY_NAME
+		, JOB_NAME
+		, COMPANY_SIZE
+		, COMPANY_OVERVIEW
+		, JOB_DESC
+		, JOB_REQUIREMENT
+		, CONTENT
+		, SALARY
+		, LINK_ADDRESS
+		FROM
+		TBL_POSTING
+		WHERE
+		POSTING_ID = #{postingId}
+
+	</select>
+
+	<!-- 3) 관리자 : 채용공고 수정 -->
+	<update id="update">
+		UPDATE
+		TBL_POSTING
+		SET
+		COMPANY_NAME = #{companyName}
+		, JOB_NAME = #{jobName}
+		, COMPANY_SIZE = #{companySize}
+		, COMPANY_OVERVIEW = #{companyOverview}
+		, JOB_DESC = #{jobDesc}
+		, JOB_REQUIREMENT = #{jobRequirement}
+		, CONTENT = #{content}
+		, SALARY = #{salary}
+		, LINK_ADDRESS = #{linkAddress}
+		WHERE
+		POSTING_ID = #{postingId}
+	</update>
+
+	<!-- 4) 관리자 : 채용공고 삭제 -->
+	<delete id="delete">
+		DELETE FROM
+		TBL_POSTING
+		WHERE
+		POSTING_ID = #{postingId}
+	</delete>
+
+	<!-- 검색 조건 -->
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'all'.toString()">
+				AND (COMPANY_NAME like '%' || #{keyword} || '%'
+				OR JOB_NAME like '%' || #{keyword} || '%'
+				OR COMPANY_SIZE like '%' || #{keyword} || '%')
+			</if>
+			<if test="searchType == 'cn'.toString()"> AND COMPANY_NAME like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'jn'.toString()"> AND JOB_NAME like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'cs'.toString()"> AND COMPANY_SIZE like '%' || #{keyword} || '%' </if>
+		</if>
+	</sql>
+
+	<!-- 5) 관리자 : 채용공고 목록 페이징 처리(검색) -->
+	<select id="listSearchCriteria"
+		resultType="com.hmis.domain.PostingVO">
+		<![CDATA[
+		SELECT * FROM (
+			SELECT ROWNUM RNUM
+				, POSTING_ID
+				, COMPANY_NAME
+				, JOB_NAME
+				, COMPANY_SIZE
+			FROM
+				(SELECT * FROM TBL_POSTING WHERE POSTING_ID > 0 
+		]]>
+		<include refid="search"></include>
+		<![CDATA[    
+			ORDER BY POSTING_ID DESC))
+		WHERE (RNUM >= #{pageStart} AND RNUM <= #{pageEnd})
+		ORDER BY POSTING_ID DESC
+		]]>
+	</select>
+
+	<!-- 6) 관리자 : 페이징 처리를 위한 채용공고 수 가져오기(검색) -->
+	<select id="listCountSearchCriteria" resultType="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM TBL_POSTING WHERE POSTING_ID > 0 
+		]]>
+		<include refid="search"></include>
+	</select>
+
+	<!-- 7) 관리자 : 인재추천 -->
+	<!-- <select id="recommand" resultType="com.hmis.dto.RecommandDTO"> <![CDATA[ 
+		SELECT UC.USER_NO, U.USER_NAME, C.CAR_NAME, ROUND(DBMS_RANDOM.VALUE(85,97),2) 
+		RECOMMAND, UPT.RECOMMAND_SCORE, PF.PHONE FROM TBL_USER U, TBL_CARRIER C, 
+		TBL_USCAR UC, TBL_PORTFOLIO PF, TBL_POSTING PT, TBL_USER_POSTING UPT WHERE 
+		U.USER_NO = UC.USER_NO AND PF.USER_NO = U.USER_NO AND C.CAR_NO = UC.CAR_NO 
+		AND PT.POSTING_ID = UPT.POSTING_ID AND PT.JOB_NAME LIKE '%' || C.CAR_NAME 
+		|| '%' AND ROWNUM <= 5 ORDER BY UP_NO DESC, RECOMMAND DESC ]]> </select> -->
+
+
+	<!-- 7) 관리자 : 인재추천 -->
+	<select id="recommand" resultType="com.hmis.dto.RecommandDTO">
+       <![CDATA[
+        SELECT U.USER_NO, U.USER_NAME, UPT.RECOMMAND_SCORE
+		FROM TBL_USER U, TBL_USER_POSTING UPT
+		WHERE U.USER_NO = UPT.USER_NO
+		AND ROWNUM <= 5
+		ORDER BY UP_NO DESC
+       
+       
+       ]]>
+	</select>
+
+
+	<!-- 채용직무 기업명 기업형태 연봉 추천점수 -->
+	<select id="recommandPosting"
+		resultType="com.hmis.dto.RecommandDTO">
+		<![CDATA[
+	     SELECT 
+	         PT.JOB_NAME, PT.COMPANY_NAME, PT.COMPANY_SIZE, PT.SALARY, ROUND(DBMS_RANDOM.VALUE(85,97),2) RECOMMAND
+	      FROM 
+	         TBL_USER U, TBL_CARRIER C,  TBL_USCAR UC, TBL_PORTFOLIO PF, TBL_POSTING PT
+	      WHERE 
+	         U.USER_NO = UC.USER_NO 
+	            AND PF.USER_NO = U.USER_NO
+	         AND C.CAR_NO = UC.CAR_NO
+	            AND U.USER_NO = #{userNo}
+	         AND PT.JOB_NAME LIKE '%' || C.CAR_NAME || '%'
+	            AND ROWNUM <= 5
+	      ORDER BY RECOMMAND DESC
+		]]>
+	</select>
+
+	<insert id="registerRecommand">
+		INSERT INTO TBL_USER_POSTING
+		(UP_NO, POSTING_ID, USER_NO, SLEDDING, RECOMMAND_SCORE, RECOMMAND_DATE)
+		VALUES
+		(SEQ_USER_POSTING.nextval, #{postingId}, #{userNo}, #{sledding}, #{recommandScore}, SYSDATE)
+	</insert>
+
+
+</mapper>
+>>>>>>> branch 'master' of https://github.com/Ohsojin/HR_Matching.git

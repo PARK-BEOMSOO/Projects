@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.AnnouncementMapper">
+
+	<!-- 제목 검색 -->
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'nn'.toString()"> WHERE (TITLE like '%' || #{keyword} || '%' 
+				OR COMP_NAME like '%' || #{keyword} || '%' OR JOB like '%' || #{keyword} || '%'
+				OR CONTENT like '%' || #{keyword} || '%') </if>
+			<if test="searchType == 't'.toString()"> WHERE TITLE like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'c'.toString()"> WHERE COMP_NAME like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'j'.toString()"> WHERE JOB like '%' || #{keyword} || '%' </if>
+			<if test="searchType == 'ct'.toString()"> WHERE CONTENT like '%' || #{keyword} || '%' </if>
+		</if>
+	</sql>
+
+	<!-- 구직 공고 전체 리스트 -->
+	<select id="selectAllAnnouncements"
+		resultType="com.hmis.domain.AnnouncementVO">
+		SELECT * FROM (
+		SELECT ROWNUM RNUM
+		, ANN_NO
+		, TITLE
+		, COMP_NAME
+		, END_DATE
+		, JOB
+		, COMP_AREA
+		, CONTENT
+		, REG_NAME
+		, REG_DATE
+		, VIEW_COUNT
+		FROM
+			TBL_ANNOUNCEMENT
+			<include refid="search" />
+	<![CDATA[    
+		) WHERE (RNUM >= #{pageStart} AND RNUM <= #{pageEnd}) 
+		  ORDER BY ANN_NO DESC
+	]]>
+	</select>
+
+	<!-- 페이징 처리 -->
+	<select id="selectAllAnnouncementsCount" resultType="int">
+		SELECT COUNT(ANN_NO) FROM (
+		SELECT ANN_NO
+		, TITLE
+		, COMP_NAME
+		, END_DATE
+		, JOB
+		, COMP_AREA
+		, CONTENT
+		, REG_NAME
+		, REG_DATE
+		, VIEW_COUNT
+		FROM TBL_ANNOUNCEMENT
+		<include refid="search" />
+		)
+	</select>
+
+	<insert id="insertAnnouncement">
+		insert into TBL_ANNOUNCEMENT
+		(ANN_NO, TITLE, COMP_NAME, END_DATE,JOB,COMP_AREA, CONTENT, REG_NAME, REG_DATE)
+		values(SEQ_ANN.nextval, #{title}, #{compName}, #{endDate}, #{job}, #{compArea}, #{content}, #{regName}, SYSDATE)
+	</insert>
+
+
+   <update id="updateViewCount">
+   <![CDATA[
+      UPDATE 
+      	TBL_ANNOUNCEMENT 
+      SET 
+      	VIEW_COUNT=VIEW_COUNT+1 
+      WHERE ANN_NO= #{annNo}
+   ]]>
+   </update>
+
+	<select id="selectOneAnnouncementByNum"
+		resultType="com.hmis.domain.AnnouncementVO">
+		SELECT ANN_NO
+			, TITLE
+			, COMP_NAME
+			, END_DATE
+			, JOB
+			, COMP_AREA
+			, CONTENT
+			, REG_NAME
+			, REG_DATE
+			, VIEW_COUNT
+		FROM 
+			TBL_ANNOUNCEMENT
+		WHERE ANN_NO= #{annNo}
+	</select>
+
+   <update id="updateAnnouncement">
+      UPDATE 
+      	TBL_ANNOUNCEMENT 
+      SET 
+      	  TITLE = #{title}
+      	, COMP_NAME = #{compName}
+      	, END_DATE = #{endDate}
+      	, JOB = #{job}
+      	, COMP_AREA = #{compArea}
+      	, CONTENT = #{content}
+      WHERE ANN_NO = #{annNo}
+   </update>
+
+   <delete id="deleteAnnouncement">
+      DELETE FROM TBL_ANNOUNCEMENT
+      WHERE ANN_NO = #{annNo}
+   </delete>
+
+</mapper>

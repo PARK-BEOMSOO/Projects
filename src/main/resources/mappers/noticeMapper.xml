@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hmis.mapper.NoticeMapper">
+
+
+	<!-- 관리자:: 공지사항 등록 -->
+	<insert id ="adCreate">
+	<selectKey keyProperty="noticeNo" resultType="int" order="BEFORE">
+	SELECT SEQ_NOTICE.NEXTVAL FROM DUAL
+	</selectKey>
+	
+	INSERT INTO TBL_NOTICE (NOTICE_NO, TITLE, CONTENT, REGISTER, REG_DATE)
+	VALUES (#{noticeNo}, #{title}, #{content}, #{register}, SYSDATE)
+	</insert>
+
+
+
+	<!-- 관리자,학생 :: 공지사항 상세보기 -->
+	<select id="read" resultType="com.hmis.domain.NoticeVO">
+		SELECT
+			NOTICE_NO
+			,TITLE
+			,CONTENT
+			,REGISTER
+			,REG_DATE
+		FROM
+			TBL_NOTICE
+		WHERE NOTICE_NO = #{noticeNo}
+	</select>
+	
+	
+	
+	<!-- 관리자:: 공지사항 수정 -->
+	<update id="adUpdate">
+		UPDATE TBL_NOTICE
+		SET
+			TITLE = #{title}
+			,CONTENT = #{content}
+		WHERE
+			NOTICE_NO = #{noticeNo}
+	</update>
+	
+	
+	
+	<!-- 관리자:: 공지사항 삭제 -->
+	<delete id="adDelete">
+		DELETE FROM
+			TBL_NOTICE
+		WHERE
+			NOTICE_NO = #{noticeNo}
+	</delete>
+	
+	
+	
+	
+	<!-- 제목 검색 : 프로그램명, 유형, 연도 -->
+   	<sql id="search">
+      	<if test="searchType != null">
+      		<if test="searchType == 'nn'.toString()"> and (TITLE like '%' || #{keyword} || '%' OR CONTENT like '%' || #{keyword} || '%') </if>
+         	<if test="searchType == 't'.toString()"> and TITLE like '%' || #{keyword} || '%' </if>
+         	<if test="searchType == 'c'.toString()"> and CONTENT like '%' || #{keyword} || '%' </if>
+      	</if>
+   	</sql>
+	
+
+	<select id="listSearch" resultType="com.hmis.domain.NoticeVO">
+   	<![CDATA[ 
+		SELECT * FROM(
+			SELECT ROWNUM RNUM
+				,NOTICE_NO
+				,TITLE
+				,CONTENT
+				,REGISTER
+				,REG_DATE
+			FROM (
+				SELECT 
+					NOTICE_NO
+					,TITLE
+					,CONTENT
+					,REGISTER
+					,REG_DATE
+				FROM
+					TBL_NOTICE
+				WHERE NOTICE_NO >= 0
+		]]>
+		<include refid="search"></include>
+		ORDER BY NOTICE_NO DESC
+		<![CDATA[    
+ 		)) WHERE (RNUM >= #{pageStart} AND RNUM <= #{pageEnd}) 
+		ORDER BY NOTICE_NO DESC
+		]]>
+	</select>
+	
+	<!-- 프로그램 검색할 때 전체 카운트 가져오기 -->
+	<select id="listSearchCount" resultType="int">
+		<![CDATA[  
+		SELECT 
+			COUNT(NOTICE_NO) 
+		FROM 
+			TBL_NOTICE
+		WHERE 
+			NOTICE_NO > 0 
+		]]>
+		<include refid="search" />
+	</select>
+	
+
+	
+	
+	<!-- 관리자 :: 다중 파일 등록 -->
+	<insert id="insertFile">
+		INSERT INTO TBL_NOTICE_FILE
+	  		(NOTICE_FILE_NO
+      		,NOTICE_FILE_NAME
+      		,NOTICE_NO)
+      	VALUES
+      		(SEQ_NOTICE_FILE.NEXTVAL 
+      		,#{noticeFileName}
+      		,#{noticeNo})
+	</insert>
+	
+	
+	
+	
+	<!-- 관리자 :: 다중 파일 등록 -->
+	<insert id="deleteFile">
+		DELETE FROM TBL_NOTICE_FILE
+		WHERE NOTICE_NO= #{noticeNo}
+	</insert>
+	
+	
+	
+	
+	<!-- 파일 목록 -->
+	<select id="fileList" resultType="com.hmis.domain.NoticeFileVO">
+		SELECT 
+			NOTICE_FILE_NO
+			,SUBSTR(NOTICE_FILE_NAME, 50) AS NOTICE_FILE_NAME
+			,NOTICE_FILE_NAME AS FILE_LOCATION
+			,NOTICE_NO
+		FROM
+			TBL_NOTICE_FILE
+		WHERE 
+			NOTICE_NO = #{noticeNo}
+	</select>
+	
+	
+	
+	
+	
+	
+	
+</mapper>

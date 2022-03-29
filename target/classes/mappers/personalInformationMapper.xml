@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.PersonalInformationMapper">
+
+	<!-- K-Digital 당시 추가 -->
+	<!-- 학생 : 개인정보 동의여부 상세보기  -->
+	<select id="read" resultType="com.hmis.domain.PersonalInformationVO">
+		SELECT
+			USER_NO
+			, ASSENT
+		FROM
+			TBL_PERSONAL_INFORMATION
+		WHERE 
+			USER_NO = #{userNo}
+	</select>
+
+	<!-- K-Digital 당시 추가 -->
+	<!-- 학생 : 개인정보 동의여부 수정  -->
+	<update id="update">
+		UPDATE 
+			TBL_PERSONAL_INFORMATION 
+		SET 
+			ASSENT = #{assent}
+		WHERE 
+			USER_NO = #{userNo}
+	</update>
+
+</mapper>

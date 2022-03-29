@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hmis.mapper.SkillMapper">
+
+	<!-- 사용자가 선택하지 않은 기술번호(SKILL_NO)순으로 모든 기술 리스트 POPUP 사용 -->
+	<select id="selectAllSkills"
+		resultType="com.hmis.domain.SkillVO">
+		SELECT * 
+		FROM 
+			TBL_SKILL
+		WHERE NOT SKILL_NO IN 
+				  (SELECT SKILL_NO FROM TBL_USER_SKILL WHERE USER_NO = #{userNo})
+		ORDER BY SKILL_NO
+	</select>
+	
+	<!-- 사용자가 등록한 기술 리스트 -->
+	<select id="selectSkill"
+		resultType="com.hmis.domain.SkillVO">
+		SELECT u.SKILL_NO
+			, SKILL_NAME
+			, USER_NO
+		FROM TBL_USER_SKILL u, 
+			 TBL_SKILL s
+		WHERE u.SKILL_NO = s.SKILL_NO AND USER_NO = #{userNo}
+		ORDER BY u.SKILL_NO
+	</select>
+	
+
+	<insert id="insertSkill">
+		INSERT INTO 
+		TBL_USER_SKILL (SKILL_NO, USER_NO)
+			    VALUES (#{skillNo}, #{userNo})
+	</insert>
+
+   <delete id="deleteSkill">
+      DELETE FROM TBL_USER_SKILL
+      WHERE SKILL_NO = #{skillNo} AND USER_NO = #{userNo}
+   </delete>
+
+</mapper>
